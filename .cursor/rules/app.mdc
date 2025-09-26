@@ -1,5 +1,306 @@
 ---
-description:
+description: 家計のクレジットカード決済履歴確認アプリ「Familify」の開発ルール（DDD/feature-first、SolidJS、TanStack Router、vanilla-extract、zod）
 globs:
+  - "src/**/*"
+  - "app.config.ts"
+  - "package.json"
 alwaysApply: true
 ---
+
+### タイトル
+- 家計のクレジットカード決済履歴確認アプリ（Familify）
+
+### 目的・スコープ
+- 月毎のクレジットカード決済履歴を合計金額とともに一覧表示し、年・月を切り替えて確認できる最小製品（MVP）を提供する。
+- 将来の要件追加（複数カード、タグ、家族間共有）に耐える、経年劣化に強いフロントエンド設計を採用する。
+
+### 原則（Small, clear, safe steps）
+- 変更は小さく安全に、可逆性を保つ。
+- 新規依存は必要最小限。既存（SolidJS、TanStack Router、vanilla-extract、zod）に寄せる。
+- DDD/feature-first を適用し、UI とドメイン/ユースケースを疎結合に保つ。
+
+### 技術スタック（拘束条件）
+- UI: SolidJS（signals/memo、リソース）
+- ルーティング: TanStack Router v1（file-based、plugin 連携）
+- スタイル: vanilla-extract（design tokens + recipes）
+- バリデーション/型: zod（runtime validation + inferred types）
+- Node: >= 22（`package.json` 準拠）
+
+インストール（未導入なら）:
+```bash
+npm install zod @vanilla-extract/css @vanilla-extract/recipes
+```
+
+### 機能要件（MVP）
+- 月毎の決済履歴一覧（トランザクション行＋件数/合計）
+- 年・月の切替（URL パラメータ or 検索パラメータ）
+- 期間境界のバリデーション（存在しない月/年の防止）
+- 空状態・エラー状態・ローディング状態の表示
+
+将来拡張（非必須/参考）
+- 複数カード/家族アカウント、CSV/OFX 取込、タグ、検索/フィルタ、通貨
+
+### アーキテクチャ（DDD の適用方針）
+- レイヤ
+  - domain: エンティティ、値オブジェクト、ドメインサービス、zod スキーマ
+  - application: ユースケース（クエリ/コマンド）、ポート（Repository IF）
+  - infrastructure: アダプタ（HTTP/Fake/InMemory）、DTO マッピング
+  - ui: プレゼンテーション（コンポーネント、container/presenter 分離）
+- 依存方向: ui → application → domain（← infrastructure は実装詳細）
+- CQRS ライト: 読み取り中心（コマンド最小）
+
+### ディレクトリ構成（feature-first）
+```
+src/
+  features/
+    statements/                # 決済明細(期間=年/月)に関する境界づけられたコンテキスト
+      domain/
+        models/                # zod スキーマ・型（Transaction, Statement, Period）
+        services/              # ドメインサービス（集計など副作用なし）
+      application/
+        usecases/              # ユースケース（getStatementByPeriod 等）
+        ports/                 # Repository IF
+      infrastructure/
+        repositories/          # HTTP/Local/Fake 実装
+        mappers/               # DTO ↔ Domain 変換
+      ui/
+        components/            # 表示用純粋コンポーネント（presenter）
+        containers/            # データ取得/状態管理（container）
+        styles/                # vanilla-extract のスタイル
+  routes/                      # TanStack Router（file-based）
+    statements.$year.$month.tsx
+    index.tsx
+  shared/
+    lib/                       # 汎用ユーティリティ（日時/数値/フォーマット）
+    styles/                    # design tokens, themes（vanilla-extract）
+    ui/                        # 再利用 UI（ボタン等、非ドメイン）
+```
+
+### ルーティング指針（TanStack Router）
+- 期間はパラメータで表現: `src/routes/statements.$year.$month.tsx`
+- ルートは `features/*/ui` の container/presenter をインポートして構築（ルートファイルは薄く）
+- プリフェッチ: defaultPreload "intent" を活用（既定維持）
+- エラー境界: ルート単位で `errorComponent` を設定可能
+
+サンプル（ルート薄い実装）:
+```tsx
+// src/routes/statements.$year.$month.tsx
+import { createRoute } from "@tanstack/solid-router";
+import { StatementPage } from "@/features/statements/ui/containers/StatementPage";
+
+export const Route = createRoute({
+  path: "/statements/$year/$month",
+  component: () => <StatementPage />,
+});
+```
+
+### 状態管理指針
+- サーバデータ: ルートローダ or container 内の `createResource` でフェッチ
+- UI 状態: `createSignal`/`createMemo`、最小限の局所状態
+- URL が単一真実: 年/月の切替は URL パラメータを正とし、UI はそれを投影
+- ドメインロジックは domain/application に集約。UI から直接計算しない
+
+### ドメインモデル（zod）
+```ts
+// src/features/statements/domain/models/transaction.ts
+import { z } from "zod";
+
+export const Currency = z.enum(["JPY"]);
+export const Yen = z.number().int().finite(); // 税込/円建て最小
+
+export const Transaction = z.object({
+  id: z.string().uuid(),
+  occurredAt: z.string().datetime(), // ISO8601
+  merchant: z.string().min(1),
+  amount: Yen, // 支出は正、返金は負で表現してもよい（チームで合意）
+  cardId: z.string().min(1),
+  memo: z.string().optional(),
+});
+export type Transaction = z.infer<typeof Transaction>;
+
+export const Period = z.object({
+  year: z.number().int().min(2000).max(2100),
+  month: z.number().int().min(1).max(12),
+});
+export type Period = z.infer<typeof Period>;
+
+export const Statement = z.object({
+  period: Period,
+  transactions: z.array(Transaction),
+  totalAmount: Yen,
+  count: z.number().int().nonnegative(),
+});
+export type Statement = z.infer<typeof Statement>;
+```
+
+集計サービス:
+```ts
+// src/features/statements/domain/services/aggregate.ts
+import { Statement, Transaction, Period } from "../models/transaction";
+
+export function aggregateStatement(period: Period, txs: Transaction[]): Statement {
+  const total = txs.reduce((sum, t) => sum + t.amount, 0);
+  return { period, transactions: txs, totalAmount: total, count: txs.length };
+}
+```
+
+### ポート/ユースケース
+```ts
+// src/features/statements/application/ports/StatementsRepository.ts
+import { Period, Statement } from "../../domain/models/transaction";
+export interface StatementsRepository {
+  getByPeriod(period: Period): Promise<Statement>;
+}
+```
+
+```ts
+// src/features/statements/application/usecases/getStatementByPeriod.ts
+import { z } from "zod";
+import { Period } from "../../domain/models/transaction";
+import type { StatementsRepository } from "../ports/StatementsRepository";
+
+const Input = Period;
+export type Input = z.infer<typeof Input>;
+
+export function getStatementByPeriod(repo: StatementsRepository) {
+  return async (input: Input) => {
+    const period = Input.parse(input);
+    return repo.getByPeriod(period);
+  };
+}
+```
+
+### インフラ（アダプタ）
+```ts
+// src/features/statements/infrastructure/repositories/FakeStatementsRepository.ts
+import { StatementsRepository } from "../../application/ports/StatementsRepository";
+import { Statement, Transaction } from "../../domain/models/transaction";
+import { aggregateStatement } from "../../domain/services/aggregate";
+import { Period } from "../../domain/models/transaction";
+
+export class FakeStatementsRepository implements StatementsRepository {
+  async getByPeriod(period: Period): Promise<Statement> {
+    const txs: Transaction[] = []; // TODO: seed
+    return aggregateStatement(period, txs);
+  }
+}
+```
+
+### UI（container/presenter 分離）
+```tsx
+// src/features/statements/ui/containers/StatementPage.tsx
+import { useParams } from "@tanstack/solid-router";
+import { createResource, Show } from "solid-js";
+import { getStatementByPeriod } from "../../application/usecases/getStatementByPeriod";
+import { FakeStatementsRepository } from "../../infrastructure/repositories/FakeStatementsRepository";
+import { StatementView } from "../components/StatementView";
+
+export function StatementPage() {
+  const params = useParams({ from: "/statements/$year/$month" }) as { year: string; month: string };
+  const repo = new FakeStatementsRepository();
+  const usecase = getStatementByPeriod(repo);
+
+  const [data] = createResource(
+    () => ({ year: Number(params.year), month: Number(params.month) }),
+    usecase
+  );
+
+  return (
+    <Show when={data()} fallback={<div>Loading...</div>}>
+      {s => <StatementView statement={s} />}
+    </Show>
+  );
+}
+```
+
+```tsx
+// src/features/statements/ui/components/StatementView.tsx
+import type { Statement } from "../../domain/models/transaction";
+export function StatementView(props: { statement: Statement }) {
+  const { transactions, totalAmount, count, period } = props.statement;
+  return (
+    <section>
+      <h1>{period.year}年{period.month}月の明細</h1>
+      <div>件数: {count}</div>
+      <div>合計: {totalAmount.toLocaleString()}円</div>
+      <ul>
+        {transactions.map(tx => (
+          <li>
+            <span>{new Date(tx.occurredAt).toLocaleDateString()}</span>
+            <span> {tx.merchant}</span>
+            <span> {tx.amount.toLocaleString()}円</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+```
+
+### スタイル（vanilla-extract）
+- design tokens を `src/shared/styles/theme.css.ts` に集中
+- コンポーネントは recipes でバリアント管理、直書きしない
+
+```ts
+// src/shared/styles/theme.css.ts
+import { createGlobalTheme } from "@vanilla-extract/css";
+
+export const vars = createGlobalTheme(":root", {
+  color: {
+    bg: "#fff",
+    text: "#111",
+    primary: "#3b82f6",
+    subtle: "#f5f5f5",
+  },
+  space: { xs: "4px", sm: "8px", md: "12px", lg: "16px" },
+  radius: { sm: "6px" },
+});
+```
+
+### バリデーション/エラー処理
+- すべての外部入力（URL パラメータ/サーバ応答/ローカル保存値）を zod で parse する
+- ユースケースで域外のエラーは `Error` に正規化し、UI でユーザ向け文言を表示
+- ルートごとに errorComponent を用意（グローバル fallback は簡潔に）
+
+### 日付/金額
+- 日付: ISO8601 文字列で受け取り `Date` へ変換、表示は `Intl.DateTimeFormat`
+- 金額: 数値（円）で保持、表示は `Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY" })` を検討
+
+### パフォーマンス
+- リストは key 安定化、メモ化は必要最小限
+- 期間切替時にデータをキャッシュ（ルートの staleTime=5000ms 既定活用）
+- 画像やアイコンは遅延読込（必要な場合のみ）
+
+### アクセシビリティ
+- セマンティックな HTML、フォーカス管理、色コントラストは AA 以上
+- ローディング/エラーの SR（スクリーンリーダー）対応
+
+### セキュリティ/プライバシー
+- カード番号等の秘匿情報は保存・ログ出力しない（ID のみ）
+- PII は localStorage に保存しない（必要な場合は暗号化と同意）
+
+### 計測/ログ
+- 重要イベント（期間切替、読み込み失敗）を抽象ロガー経由で記録
+- 依存を増やさず、まずは `console` 抽象から開始
+
+### テスト（段階導入）
+- モデル/サービス/ユースケースはユニットテスト（zod parse、集計）
+- UI はビューモデル（container の `resource`）を薄く保ち、ロジックはユースケース側で検証
+- ランナー（Vitest 等）は導入時に最小設定で
+
+### 命名規約
+- ファイル: `PascalCase`（コンポーネント）、`camelCase`（関数/ユースケース）、`kebab-case`（ルートファイル）
+- 型/スキーマは同名で export（`Transaction`, `TransactionSchema` は避け、zod 変数名を型名と一致させる）
+
+### 作業手順（1 PR 1 目的）
+1. 計画（小さな目標を記述）
+2. 関連ファイルを読み、影響範囲を明確化
+3. 実装（domain → application → infrastructure → ui）
+4. 動作確認（年/月切替、空/エラー/正常）
+5. レビュー（スクショ/録画、リスク/後続課題を記載）
+
+### 受け入れ基準（MVP）
+- `/statements/2025/09` などで一覧・合計・件数が表示される
+- URL の年/月を切り替えると UI が同期して更新される
+- 不正な月/年ではユーザに分かるエラー表示（404 でも可）
+- LCP < 2.5s（ローカル想定）、JS エラー 0
