@@ -5,12 +5,13 @@
 import { For } from "solid-js";
 import { statementWrapper, summaryHeader, totalAmountText, transactionsList, transactionItem } from "../styles/statement.css";
 import { Link } from "@tanstack/solid-router";
+import { PaymentModel } from "../../domain/models/payment";
 
 type Props = {
-  years: number[];
+  payments: PaymentModel[];
 };
 
-export function PaymentsSummaryView(props: Props) {
+export function PaymentsSummaryView({ payments }: Props) {
   return (
     <section class={statementWrapper} aria-label="決済サマリー">
       <header class={summaryHeader}>
@@ -19,13 +20,11 @@ export function PaymentsSummaryView(props: Props) {
       </header>
 
       <ul class={transactionsList}>
-        <For each={props.years}>
-          {year => (
+        <For each={payments}>
+          {payment => (
             <li class={transactionItem}>
-              <span>{year}年</span>
-              <Link to="/payments/$year" params={{ year: String(year) }}>
-                詳細へ
-              </Link>
+              <span>{payment.date}</span>
+              <span>{payment.amount}</span>
             </li>
           )}
         </For>

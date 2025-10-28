@@ -3,10 +3,10 @@
  * 決済サマリーページのルートを定義する。
  */
 import { createFileRoute } from "@tanstack/solid-router";
-import { PaymentsSummaryPage } from "../../features/payments/ui/containers/PaymentsSummaryPage";
+import { PaymentPage } from "../../features/payments/ui/containers/PaymentPage";
 
 export const Route = createFileRoute("/payments/")({
-  component: PaymentsSummaryPage
+  component: () => <PaymentPage />
 });
 
 
