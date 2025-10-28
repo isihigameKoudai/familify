@@ -32,10 +32,6 @@ export const Route = createFileRoute("/payments/$year/$month")({
         month: result.data.month
       };
     },
-    stringify: (params) => ({
-      year: String(params.year),
-      month: String(params.month)
-    }),
   },
   component: () => {
     const params = useParams({ from: "/payments/$year/$month" });

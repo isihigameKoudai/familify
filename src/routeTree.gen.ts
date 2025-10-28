@@ -9,17 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PaymentsIndexRouteImport } from './routes/payments/index'
 import { Route as PaymentsYearIndexRouteImport } from './routes/payments/$year/index'
 import { Route as PaymentsYearMonthRouteImport } from './routes/payments/$year/$month'
 
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,14 +37,12 @@ const PaymentsYearMonthRoute = PaymentsYearMonthRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/payments': typeof PaymentsIndexRoute
   '/payments/$year/$month': typeof PaymentsYearMonthRoute
   '/payments/$year': typeof PaymentsYearIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/payments': typeof PaymentsIndexRoute
   '/payments/$year/$month': typeof PaymentsYearMonthRoute
   '/payments/$year': typeof PaymentsYearIndexRoute
@@ -58,30 +50,18 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/payments/': typeof PaymentsIndexRoute
   '/payments/$year/$month': typeof PaymentsYearMonthRoute
   '/payments/$year/': typeof PaymentsYearIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/about'
-    | '/payments'
-    | '/payments/$year/$month'
-    | '/payments/$year'
+  fullPaths: '/' | '/payments' | '/payments/$year/$month' | '/payments/$year'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/about'
-    | '/payments'
-    | '/payments/$year/$month'
-    | '/payments/$year'
+  to: '/' | '/payments' | '/payments/$year/$month' | '/payments/$year'
   id:
     | '__root__'
     | '/'
-    | '/about'
     | '/payments/'
     | '/payments/$year/$month'
     | '/payments/$year/'
@@ -89,7 +69,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
   PaymentsIndexRoute: typeof PaymentsIndexRoute
   PaymentsYearMonthRoute: typeof PaymentsYearMonthRoute
   PaymentsYearIndexRoute: typeof PaymentsYearIndexRoute
@@ -97,13 +76,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/solid-router' {
   interface FileRoutesByPath {
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -137,7 +109,6 @@ declare module '@tanstack/solid-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
   PaymentsIndexRoute: PaymentsIndexRoute,
   PaymentsYearMonthRoute: PaymentsYearMonthRoute,
   PaymentsYearIndexRoute: PaymentsYearIndexRoute,

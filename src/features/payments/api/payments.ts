@@ -1,8 +1,14 @@
 import type { Payment } from "../domain/models/payment";
 
-export const getPayments = async (): Promise<Payment[]> => {
-  const response = await fetch("/api/payments", {
+export interface GetPaymentsParams {
+  year?: number;
+  month?: number;
+}
+
+export const getPayments = async (params: GetPaymentsParams): Promise<Payment[]> => {
+  const response = await fetch(`/api/payments?${new URLSearchParams(Object.fromEntries(Object.entries(params).map(([key, value]) => [key, String(value)]))).toString()}`, {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    method: "GET",
   });
 
   if (!response.ok) {

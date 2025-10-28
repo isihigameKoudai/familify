@@ -1,10 +1,10 @@
 import { getPaymentsAdapter } from "../adapter/payment";
-import { getPayments } from "../api/payments";
+import { getPayments, GetPaymentsParams } from "../api/payments";
 
 export const PaymentService = () => {
-  const fetchPayments = async () => {
+  const fetchPayments = async (params: GetPaymentsParams) => {
     try {
-      const payments = await getPayments();
+      const payments = await getPayments(params);
       return getPaymentsAdapter(payments);
     } catch (error) {
       console.error(error);
