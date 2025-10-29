@@ -1,6 +1,6 @@
 import type { APIEvent } from "@solidjs/start/server";
 
-const TARGET_URL = "https://script.google.com/macros/s/AKfycbzfPSFH19GIj60VC6sINhof9nCesNv1-Bkeuf-j6TOwI8t7Ww-lMhP9HLRGb473GHazUg/exec";
+const TARGET_URL = "https://script.google.com/macros/s/AKfycbz3fQJvLrivCNoeLd7paEcxZbz7q6Ofp0N9HvO96gI5th96NksrusV38LU_l3SgA2pmiQ/exec";
 
 const CORS_HEADERS = new Headers({
   "Access-Control-Allow-Origin": "*",

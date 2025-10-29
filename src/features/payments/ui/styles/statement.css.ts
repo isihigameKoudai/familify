@@ -2,15 +2,19 @@
  * payments/ui/styles/statement.css.ts
  * 月次明細ビューのスタイル変数とレイアウトをvanilla-extractで定義する。
  */
-import { createVar, style } from "@vanilla-extract/css";
+import { style } from "@vanilla-extract/css";
 
-export const statementWrapper = style({
+export const pageWrapper = style({
   display: "flex",
   flexDirection: "column",
   gap: "16px",
-  padding: "24px",
-  maxWidth: "960px",
-  margin: "0 auto"
+  padding: "16px 16px 0 16px",
+  boxSizing: "border-box",
+  height: "calc(100vh - 68px)",
+});
+
+export const wrapper = style({
+  boxSizing: "border-box"
 });
 
 export const summaryHeader = style({
@@ -19,13 +23,15 @@ export const summaryHeader = style({
   gap: "8px",
   padding: "16px",
   borderRadius: "8px",
-  backgroundColor: "#f5f5f5"
+  backgroundColor: "#f5f5f5",
+  flexShrink: 0
 });
 
 export const totalAmountText = style({
   fontSize: "24px",
   fontWeight: 600,
-  margin: 0
+  margin: 0,
+  textAlign: "center"
 });
 
 export const carouselContainer = style({
@@ -37,7 +43,7 @@ export const carouselContainer = style({
 
 export const carouselButton = style({
   border: "none",
-  background: "#3b82f6",
+  background: "#004831",
   color: "white",
   padding: "8px 12px",
   borderRadius: "6px",
@@ -64,7 +70,7 @@ export const transactionsList = style({
   margin: 0,
   display: "flex",
   flexDirection: "column",
-  gap: "12px"
+  gap: "8px"
 });
 
 export const transactionItem = style({
@@ -81,7 +87,9 @@ export const transactionMerchant = style({
 });
 
 export const transactionAmount = style({
-  fontVariantNumeric: "tabular-nums"
+  fontVariantNumeric: "tabular-nums",
+  fontWeight: 600,
+  fontSize: 18,
 });
 
 export const emptyState = style({
@@ -92,3 +100,24 @@ export const emptyState = style({
   color: "#6b7280"
 });
 
+export const paymentCount = style({
+  fontSize: "14px",
+  color: "#6b7280"
+});
+
+export const transactionLeft = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "4px"
+});
+
+export const transactionDate = style({
+  fontSize: "14px",
+  color: "#6b7280"
+});
+
+
+export const scrollArea = style({
+  overflowY: "auto",
+  height: 'calc(100% - 12px - 12px - 142px)'
+});

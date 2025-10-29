@@ -3,9 +3,12 @@
  * 決済履歴ページ - 年・月パラメータを受け取り表示する
  */
 
-import { createResource, For } from "solid-js";
+import { createResource, For, Show } from "solid-js";
 import { PaymentService } from "../../service/payment";
-import { paymentStore } from "../../store/payment";
+import { PaymentHello } from "../components/PaymentHello";
+import { PaymentListItem } from "../components/PaymentListItem";
+import * as styles from "../styles/statement.css";
+import { createPaymentList } from "../../domain/models/payment-list";
 
 interface PaymentPageProps {
   year?: number;
@@ -14,27 +17,37 @@ interface PaymentPageProps {
 
 export function PaymentPage(props: PaymentPageProps) {
   const { fetchPayments } = PaymentService();
-  const [payments] = createResource(async () => await fetchPayments({ year: props.year, month: props.month }));
+  const [paymentList] = createResource(async () => await fetchPayments({ year: props.year, month: props.month }));
 
-  const { state: paymentsState } = paymentStore.useStore({
-    payments: payments() ?? [],
-  });
-  
-  
   return (
-    <div>
-      <h1>Payment Page</h1>
-      <p>Year: {props.year ?? "なし"}</p>
-      <p>Month: {props.month ?? "なし"}</p>
-      <For each={paymentsState.payments}>
-        {(payment) => (
-          <div>
-            <p>{payment.name}</p>
-            <p>{payment.date}</p>
-            <p>{payment.amount}</p>
-          </div>
+    <div class={styles.pageWrapper}>
+      <Show when={paymentList()} fallback={<div class={styles.emptyState}>データを読み込み中...</div>}>
+        {
+          (data) => (
+            <PaymentHello 
+              paymentList={data()} 
+              year={props.year!} 
+              month={props.month!} 
+            />
+          )
+        }
+      </Show>
+      <Show when={paymentList()} fallback={<div class={styles.emptyState}>データを読み込み中...</div>}>
+        {(data) => (
+          <Show 
+            when={data().count > 0} 
+            fallback={<div class={styles.emptyState}>この月の決済はありません</div>}
+          >
+            <div class={styles.scrollArea}>
+              <ul class={styles.transactionsList}>
+                <For each={data().payments}>
+                  {(payment) => <PaymentListItem payment={payment} />}
+                </For>
+              </ul>
+            </div>
+          </Show>
         )}
-      </For>
+      </Show>
     </div>
   );
 }

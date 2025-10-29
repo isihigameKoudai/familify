@@ -15,8 +15,8 @@ export const getPayments = async (params: GetPaymentsParams): Promise<Payment[]>
     const message = await safeParseErrorMessage(response);
     throw new Error(message ?? "Failed to fetch payments data.");
   }
-
-  return await response.json();
+  const data = await response.json();
+  return data;
 };
 
 async function safeParseErrorMessage(response: Response) {
