@@ -2,7 +2,7 @@
  * payments/domain/models/payment-list.ts
  * PaymentModel のリストを集約し、合計金額などの算出ロジックを提供する
  */
-import type { PaymentModel } from "./payment";
+import { type PaymentModel } from "./payment";
 import { formatCurrency } from "../../../../shared/utils/format";
 
 /**
