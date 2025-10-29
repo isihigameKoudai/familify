@@ -4,7 +4,8 @@
  */
 
 import { createResource, For } from "solid-js";
-import { PaymentService } from "../../serviece/payment";
+import { PaymentService } from "../../service/payment";
+import { paymentStore } from "../../store/payment";
 
 interface PaymentPageProps {
   year?: number;
@@ -14,13 +15,18 @@ interface PaymentPageProps {
 export function PaymentPage(props: PaymentPageProps) {
   const { fetchPayments } = PaymentService();
   const [payments] = createResource(async () => await fetchPayments({ year: props.year, month: props.month }));
-  console.log(payments());
+
+  const { state: paymentsState } = paymentStore.useStore({
+    payments: payments() ?? [],
+  });
+  
+  
   return (
     <div>
       <h1>Payment Page</h1>
       <p>Year: {props.year ?? "なし"}</p>
       <p>Month: {props.month ?? "なし"}</p>
-      <For each={payments()}>
+      <For each={paymentsState.payments}>
         {(payment) => (
           <div>
             <p>{payment.name}</p>

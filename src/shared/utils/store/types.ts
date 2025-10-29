@@ -5,7 +5,7 @@
  */
 
 // Stateは任意のオブジェクト型
-export type State = Record<string, unknown>;
+export type State = object;
 
 // Queriesは状態から派生した値を計算する関数のマップ
 export type Queries<S extends State> = Record<
