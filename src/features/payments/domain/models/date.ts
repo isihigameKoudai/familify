@@ -24,13 +24,43 @@ export interface DateModel extends DateResponse {
     year: number;
     month: number;
   };
-};
+  isBeforeEarliest(year: number, month: number): boolean;
+  isAfterLatest(year: number, month: number): boolean;
+  isOutsideRange(year: number, month: number): boolean;
+}
 
 export function createDate(input: DateResponse): DateModel {
   const validated = Date.parse(input);
+  const isBeforeEarliest = (year: number, month: number) => {
+    if (year < validated.earliest.year) {
+      return true;
+    }
+    if (year > validated.earliest.year) {
+      return false;
+    }
+    return month < validated.earliest.month;
+  };
+
+  const isAfterLatest = (year: number, month: number) => {
+    if (year > validated.latest.year) {
+      return true;
+    }
+    if (year < validated.latest.year) {
+      return false;
+    }
+    return month > validated.latest.month;
+  };
+
+  const isOutsideRange = (year: number, month: number) => {
+    return isBeforeEarliest(year, month) || isAfterLatest(year, month);
+  };
+
   return {
     years: validated.years,
     latest: validated.latest,
     earliest: validated.earliest,
+    isBeforeEarliest,
+    isAfterLatest,
+    isOutsideRange,
   };
 }
