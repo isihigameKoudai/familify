@@ -8,7 +8,6 @@ import { PaymentService } from "../../service/payment";
 import { PaymentHello } from "../components/PaymentHello";
 import { PaymentListItem } from "../components/PaymentListItem";
 import * as styles from "../styles/statement.css";
-import { createPaymentList } from "../../domain/models/payment-list";
 
 interface PaymentPageProps {
   year?: number;
@@ -26,8 +25,8 @@ export function PaymentPage(props: PaymentPageProps) {
           (data) => (
             <PaymentHello 
               paymentList={data()} 
-              year={props.year!} 
-              month={props.month!} 
+              year={props.year} 
+              month={props.month} 
             />
           )
         }

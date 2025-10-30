@@ -5,11 +5,13 @@
 import { useNavigate } from "@tanstack/solid-router";
 import type { PaymentListModel } from "../../domain/models/payment-list";
 import * as styles from "../styles/statement.css";
+import { DateSelect } from "./DateSelect";
+import { Show } from "solid-js";
 
 interface PaymentHelloProps {
   paymentList: PaymentListModel;
-  year: number;
-  month: number;
+  year?: number;
+  month?: number;
 }
 
 export function PaymentHello(props: PaymentHelloProps) {
@@ -17,18 +19,18 @@ export function PaymentHello(props: PaymentHelloProps) {
 
   // 前月への移動
   const goToPreviousMonth = () => {
-    const prevMonth = props.month - 1;
-    const prevYear = prevMonth < 1 ? props.year - 1 : props.year;
-    const adjustedMonth = prevMonth < 1 ? 12 : prevMonth;
-    navigate({ to: `/payments/${prevYear}/${adjustedMonth}` });
+    // const prevMonth = props.month - 1;
+    // const prevYear = prevMonth < 1 ? props.year - 1 : props.year;
+    // const adjustedMonth = prevMonth < 1 ? 12 : prevMonth;
+    // navigate({ to: `/payments/${prevYear}/${adjustedMonth}` });
   };
 
   // 翌月への移動
   const goToNextMonth = () => {
-    const nextMonth = props.month + 1;
-    const nextYear = nextMonth > 12 ? props.year + 1 : props.year;
-    const adjustedMonth = nextMonth > 12 ? 1 : nextMonth;
-    navigate({ to: `/payments/${nextYear}/${adjustedMonth}` });
+    // const nextMonth = props.month + 1;
+    // const nextYear = nextMonth > 12 ? props.year + 1 : props.year;
+    // const adjustedMonth = nextMonth > 12 ? 1 : nextMonth;
+    // navigate({ to: `/payments/${nextYear}/${adjustedMonth}` });
   };
 
   return (
@@ -41,9 +43,12 @@ export function PaymentHello(props: PaymentHelloProps) {
         >
           ◀
         </button>
-        <div class={styles.carouselLabel}>
-          {props.year}年{props.month}月
-        </div>
+        <Show when={!props.year && !props.month}>
+          累計金額
+        </Show>
+        <Show when={props.year || props.month}>
+          <DateSelect year={props.year} month={props.month} />
+        </Show>
         <button
           class={styles.carouselButton}
           onClick={goToNextMonth}

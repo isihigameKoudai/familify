@@ -2,6 +2,8 @@ import { getPayments, GetPaymentsParams } from "../api/payments";
 import type { PaymentListModel } from "../domain/models/payment-list";
 import { createPayment } from "../domain/models/payment";
 import { createPaymentList } from "../domain/models/payment-list";
+import { getAvailableDate } from "../api/date";
+import { createDate, DateModel } from "../domain/models/date";
 
 export const PaymentService = () => {
   const fetchPayments = async (params: GetPaymentsParams): Promise<PaymentListModel> => {
@@ -31,9 +33,20 @@ export const PaymentService = () => {
       console.error(error);
       throw error;
     }
-  }
+  };
+
+  const fetchAvailableDate = async (): Promise<DateModel> => {
+    try {
+      const date = await getAvailableDate();
+      return createDate(date);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
 
   return {
-    fetchPayments
+    fetchPayments,
+    fetchAvailableDate
   }
 }
