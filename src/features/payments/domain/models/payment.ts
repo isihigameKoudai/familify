@@ -50,6 +50,11 @@ export interface PaymentModel extends Payment {
    * 金額をフォーマットした文字列として取得
    */
   readonly formattedAmount: string;
+
+  /**
+   * 日付を曜日付きの短い形式で取得 (例: 2025/03/15 (土))
+   */
+  readonly formattedDateWithDay: string;
 }
 
 /**
@@ -74,6 +79,14 @@ export function createPayment(input: unknown): PaymentModel {
     },
     get formattedAmount(): string {
       return formatCurrency(this.amount);
+    },
+    get formattedDateWithDay(): string {
+      return new Intl.DateTimeFormat("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short",
+      }).format(this.dateAsDate);
     }
   };
 }

@@ -10,23 +10,13 @@ interface PaymentListItemProps {
 }
 
 export function PaymentListItem(props: PaymentListItemProps) {
-  // 日付をフォーマット
-  const formattedDate = new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short"
-  }).format(props.payment.dateAsDate);
-
   return (
     <li class={styles.transactionItem}>
       <div class={styles.transactionLeft}>
-        <div class={styles.transactionMerchant}>{props.payment.name}</div>
-        <div class={styles.transactionDate}>{formattedDate}</div>
+        <span class={styles.transactionMerchant}>{props.payment.name}</span>
+        <span class={styles.transactionDate}>{props.payment.formattedDateWithDay}</span>
       </div>
-      <div class={styles.transactionAmount}>
-        {props.payment.formattedAmount}
-      </div>
+      <div class={styles.transactionAmount}>{props.payment.formattedAmount}</div>
     </li>
   );
 }
