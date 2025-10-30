@@ -2,6 +2,7 @@ import { createMemo, createResource, Show } from "solid-js";
 import { PaymentService } from "../../service/payment";
 import { Select } from "./Select";
 import { useNavigate } from "@tanstack/solid-router";
+import * as styles from "../styles/select.css";
 
 interface Props {
   year?: number;
@@ -46,7 +47,7 @@ export function DateSelect({ year, month }: Props) {
   };
 
   return (
-    <div>
+    <div class={styles.dateSelectWrapper}>
       <Show when={yearOptions().length > 0 && year}>
         {(year) => <Select
           options={yearOptions()}
