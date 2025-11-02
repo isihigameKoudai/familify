@@ -19,7 +19,7 @@ export function GlobalHeader() {
         >
           ☰
         </button>
-        <h1 class={styles.headerTitle}>Familify</h1>
+        <h1 class={styles.headerTitle}>三井住友</h1>
       </header>
       <HamburgerMenu isOpen={isMenuOpen()} onClose={() => setIsMenuOpen(false)} />
     </>
