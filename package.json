@@ -4,11 +4,10 @@
   "scripts": {
     "dev": "vinxi dev",
     "build": "vinxi build",
-    "start": "vinxi start",
+    "start": " python -m http.server 3000 .output/public",
     "version": "vinxi version"
   },
   "dependencies": {
-    "@solidjs/start": "^1.1.2",
     "@tanstack/router-plugin": "^1.112.0",
     "@tanstack/solid-router": "^1.114.1",
     "@tanstack/solid-router-devtools": "^1.114.1",
@@ -22,5 +21,9 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@solidjs/start": "^1.2.0",
+    "serve": "^14.2.5"
   }
 }

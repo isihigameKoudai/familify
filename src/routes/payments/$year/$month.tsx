@@ -5,6 +5,8 @@
 import { createFileRoute, redirect, useParams } from "@tanstack/solid-router";
 import { z } from "zod";
 import { PaymentPage } from "../../../features/payments/ui/containers/PaymentPage";
+import { fetchPaymentsOnServer } from "../../../features/payments/service/payment.server";
+import { getAvailableDateFromServer } from "../../../features/payments/api/date.server";
 
 // パラメータのバリデーションスキーマ
 const paramsSchema = z.object({
@@ -33,9 +35,19 @@ export const Route = createFileRoute("/payments/$year/$month")({
       };
     },
   },
+  loader: async ({ params }) => {
+    const year = Number(params.year);
+    const month = Number(params.month);
+    const [paymentList, availableDate] = await Promise.all([
+      fetchPaymentsOnServer({ year, month }),
+      getAvailableDateFromServer()
+    ]);
+    return { paymentList, availableDate };
+  },
   component: () => {
     const params = useParams({ from: "/payments/$year/$month" });
-    return <PaymentPage year={params().year} month={params().month} />;
+    const data = Route.useLoaderData();
+    return <PaymentPage year={params().year} month={params().month} paymentList={data().paymentList} availableDate={data().availableDate} />;
   }
 });
 

@@ -3,8 +3,9 @@
  * 決済履歴ページ - 年・月パラメータを受け取り表示する
  */
 
-import { createResource, For, Show } from "solid-js";
-import { PaymentService } from "../../service/payment";
+import { For, Show } from "solid-js";
+import type { PaymentListModel } from "../../domain/models/payment-list";
+import type { DateModel } from "../../domain/models/date";
 import { PaymentHello } from "../components/PaymentHello";
 import { PaymentListItem } from "../components/PaymentListItem";
 import * as styles from "../styles/statement.css";
@@ -12,26 +13,24 @@ import * as styles from "../styles/statement.css";
 interface PaymentPageProps {
   year?: number;
   month?: number;
+  paymentList?: PaymentListModel;
+  availableDate?: DateModel;
 }
 
 export function PaymentPage(props: PaymentPageProps) {
-  const { fetchPayments } = PaymentService();
-  const [paymentList] = createResource(async () => await fetchPayments({ year: props.year, month: props.month }));
-
   return (
     <div class={styles.pageWrapper}>
-      <Show when={paymentList()} fallback={<div class={styles.emptyState}>データを読み込み中...</div>}>
-        {
-          (data) => (
-            <PaymentHello 
-              paymentList={data()} 
-              year={props.year} 
-              month={props.month} 
-            />
-          )
-        }
+      <Show when={props.paymentList} fallback={<div class={styles.emptyState}>データを読み込み中...</div>}>
+        {(data) => (
+          <PaymentHello 
+            paymentList={data()} 
+            year={props.year} 
+            month={props.month}
+            availableDate={props.availableDate}
+          />
+        )}
       </Show>
-      <Show when={paymentList()} fallback={<div class={styles.emptyState}>データを読み込み中...</div>}>
+      <Show when={props.paymentList} fallback={<div class={styles.emptyState}>データを読み込み中...</div>}>
         {(data) => (
           <Show 
             when={data().count > 0} 

@@ -4,21 +4,20 @@
  */
 import { useNavigate } from "@tanstack/solid-router";
 import type { PaymentListModel } from "../../domain/models/payment-list";
+import type { DateModel } from "../../domain/models/date";
 import * as styles from "../styles/statement.css";
 import { DateSelect } from "./DateSelect";
-import { Show, createMemo, createResource } from "solid-js";
-import { PaymentService } from "../../service/payment";
+import { Show, createMemo } from "solid-js";
 
 interface PaymentHelloProps {
   paymentList: PaymentListModel;
   year?: number;
   month?: number;
+  availableDate?: DateModel;
 }
 
 export function PaymentHello(props: PaymentHelloProps) {
   const navigate = useNavigate();
-  const { fetchAvailableDate } = PaymentService();
-  const [availableDate] = createResource(async () => await fetchAvailableDate());
 
   const hasPeriod = createMemo(() => props.year !== undefined && props.month !== undefined);
 
@@ -47,7 +46,7 @@ export function PaymentHello(props: PaymentHelloProps) {
   });
 
   const isPreviousDisabled = createMemo(() => {
-    const date = availableDate();
+    const date = props.availableDate;
     const target = previousPeriod();
     if (!date || !target) {
       return true;
@@ -56,7 +55,7 @@ export function PaymentHello(props: PaymentHelloProps) {
   });
 
   const isNextDisabled = createMemo(() => {
-    const date = availableDate();
+    const date = props.availableDate;
     const target = nextPeriod();
     if (!date || !target) {
       return true;
@@ -67,7 +66,7 @@ export function PaymentHello(props: PaymentHelloProps) {
   // 前月への移動
   const goToPreviousMonth = () => {
     const target = previousPeriod();
-    const date = availableDate();
+    const date = props.availableDate;
     if (!target || !date || date.isOutsideRange(target.year, target.month)) {
       return;
     }
@@ -77,7 +76,7 @@ export function PaymentHello(props: PaymentHelloProps) {
   // 翌月への移動
   const goToNextMonth = () => {
     const target = nextPeriod();
-    const date = availableDate();
+    const date = props.availableDate;
     if (!target || !date || date.isOutsideRange(target.year, target.month)) {
       return;
     }
@@ -99,7 +98,7 @@ export function PaymentHello(props: PaymentHelloProps) {
           累計金額
         </Show>
         <Show when={props.year || props.month}>
-          <DateSelect year={props.year} month={props.month} />
+          <DateSelect year={props.year} month={props.month} availableDate={props.availableDate} />
         </Show>
         <button
           class={styles.carouselButton}

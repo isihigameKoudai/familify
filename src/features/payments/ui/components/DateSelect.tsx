@@ -1,29 +1,27 @@
-import { createMemo, createResource, Show } from "solid-js";
-import { PaymentService } from "../../service/payment";
+import { createMemo, Show } from "solid-js";
 import { Select } from "./Select";
 import { useNavigate } from "@tanstack/solid-router";
+import type { DateModel } from "../../domain/models/date";
 import * as styles from "../styles/select.css";
 
 interface Props {
   year?: number;
   month?: number;
+  availableDate?: DateModel;
 }
 
-export function DateSelect({ year, month }: Props) {
-  const { fetchAvailableDate } = PaymentService();
-  const [availableDate] = createResource(async () => await fetchAvailableDate());
+export function DateSelect({ year, month, availableDate }: Props) {
   const navigate = useNavigate();
 
-  const yearOptions = createMemo(() => availableDate()?.years.map(y => ({ value: y.toString(), label: y.toString() })) || []);
+  const yearOptions = createMemo(() => availableDate?.years.map(y => ({ value: y.toString(), label: y.toString() })) || []);
   const monthOptions = createMemo(() => {
-    const date = availableDate();
-    if (!date) {
+    if (!availableDate) {
       return [];
     }
     return Array.from({ length: 12 }, (_, i) => i + 1).map(monthValue => {
       const isDisabled = year === undefined
         ? false
-        : date.isOutsideRange(year, monthValue);
+        : availableDate.isOutsideRange(year, monthValue);
 
       return {
         value: monthValue.toString(),
