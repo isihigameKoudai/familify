@@ -60,7 +60,6 @@ function generateYearMonthRoutes(date: DateResponse): string[] {
 
     // 各月のルートを生成
     for (let month = startMonth; month <= endMonth; month++) {
-      console.log(`/payments/${year}/${month}`);
       routes.push(`/payments/${year}/${month}`);
     }
   }
