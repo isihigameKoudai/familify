@@ -2,7 +2,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".output/public",
   "framework": "solidstart-1",
-  "installCommand": "npm ci",
+  "installCommand": "npm ci --include=optional",
   "devCommand": "npm run dev",
   "regions": ["hnd1"]
 }
