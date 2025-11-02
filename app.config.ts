@@ -8,6 +8,7 @@ const prerenderRoutes = await getPrerenderRoutes();
 
 export default defineConfig({
   server: {
+    preset: "vercel",
     prerender: {
       routes: prerenderRoutes
     }
