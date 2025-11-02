@@ -2,8 +2,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".output/public",
   "framework": "solidstart-1",
-  "installCommand": "npm install --include=optional",
+  "installCommand": "npm ci",
   "devCommand": "npm run dev",
-  "regions": ["hnd1"]
+  "regions": ["hnd1"],
+  "functions": {
+    "app/**": {
+      "runtime": "nodejs22.x"
+    }
+  }
 }
 
