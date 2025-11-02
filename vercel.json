@@ -4,6 +4,6 @@
   "framework": "solidstart-1",
   "installCommand": "npm install --include=optional",
   "devCommand": "npm run dev",
-  "regions": ["nrt1"]
+  "regions": ["hnd1"]
 }
 
